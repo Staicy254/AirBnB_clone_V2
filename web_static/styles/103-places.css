@@ -153,7 +153,7 @@ article h3 {
 
 .guest_icon {
 	display: inline-block;
-	background-image: url("../images/icon_group.png");
+	background-image: url("../images/group.png");
 	background-repeat: no-repeat;
 	background-position: center;
 	width: 50px;
@@ -162,7 +162,7 @@ article h3 {
 
 .bed_icon {
 	display: inline-block;
-	background-image: url("../images/icon_bed.png");
+	background-image: url("../images/bed.png");
 	background-repeat: no-repeat;
 	background-position: center;
     width: 50px;
@@ -171,7 +171,7 @@ article h3 {
 
 .bath_icon {
 	display: inline-block;
-	background-image: url("../images/icon_bath.png");
+	background-image: url("../images/bath.png");
 	background-repeat: no-repeat;
 	background-position: center;
     width: 50px;
@@ -180,7 +180,7 @@ article h3 {
 
 .tv_icon {
 	display: inline-block;
-	background-image: url("../images/icon_tv.png");
+	background-image: url("../images/tv.png");
 	background-size: cover;
 	width: 20px;
 	height: 20px;
@@ -190,7 +190,7 @@ article h3 {
 
 .wifi_icon {
 	display: inline-block;
-    background-image: url("../images/icon_wifi.png");
+    background-image: url("../images/wifi.png");
     background-size: cover;
 	width: 20px;
     height: 20px;
@@ -200,10 +200,11 @@ article h3 {
 
 .pet_icon {
 	display: inline-block;
-    background-image: url("../images/icon_pets.png");
+    background-image: url("../images/pets.png");
 	background-size: cover;
     width: 20px;
 	height: 20px;
 
 	margin-right: 10px;
 }
+
