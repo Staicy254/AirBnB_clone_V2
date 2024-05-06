@@ -1,59 +1,37 @@
 #!/usr/bin/python3
-"""A module for web application deployment with Fabric."""
+
 import os
-from datetime import datetime
-from tarfile import CompressionError
-from fabric.api import local, runs_once
-from fabric.exceptions import NetworkError, CommandExecutionError
+from fabric.api import env, put, run
+
+env.hosts = ['3.85.33.120', '54.237.58.217']
 
 
-@runs_once
-def do_pack(
-    archive_dir="web_static",
-    compression="gz"
-):
+def do_deploy(archive_path):
     """
-    Archives the static files from a specified directory.
-
+    Deploys the static files to the host servers.
     Args:
-        archive_dir (str, optional): The directory to archive.
-            Defaults to "web_static".
-        compression (str, optional): The compression format to use.
-            Defaults to "gz".
-
+        archive_path (str): The path of the archive to distribute.
     Returns:
-        str: The path to the created archive file, or None on error.
+        True if all operations have been done correctly,
+        otherwise returns False.
     """
-    if not os.path.isdir(archive_dir):
-        print(f"Error: Directory '{archive_dir}' does not exist.")
-        return None
-
-    cur_time = datetime.now()
-    output = (
-        f"versions/web_static_{cur_time.year}{cur_time.month}{cur_time.day}"
-        f"{cur_time.hour}{cur_time.minute}{cur_time.second}.{compression}"
-    )
-
+    if not os.path.exists(archive_path):
+        return False
+    file_name = os.path.basename(archive_path)
+    folder_name = file_name.replace(".tgz", "")
+    folder_path = "/data/web_static/releases/{}/".format(folder_name)
+    success = False
     try:
-        print(f"Packing {archive_dir} to {output}")
-        local(f"tar -c{compression}f {output} {archive_dir}")
-        archive_size = os.stat(output).st_size
-        print(f"{archive_dir} packed: {output} -> {archive_size} Bytes")
-    except FileNotFoundError as e:
-        print(f"Error packing directory: {e}")
-        output = None
-    except CompressionError as e:
-        print(f"Compression error: {e}")
-        output = None
-    except NetworkError as e:
-        print(f"Network error: {e}")
-        output = None
-    except CommandExecutionError as e:
-        print(f"Command execution error: {e}")
-        output = None
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        output = None
-
-    return output
-
+        put(archive_path, "/tmp/{}".format(file_name))
+        run("mkdir -p {}".format(folder_path))
+        run("tar -xzf /tmp/{} -C {}".format(file_name, folder_path))
+        run("rm -rf /tmp/{}".format(file_name))
+        run("mv {}web_static/* {}".format(folder_path, folder_path))
+        run("rm -rf {}web_static".format(folder_path))
+        run("rm -rf /data/web_static/current")
+        run("ln -s {} /data/web_static/current".format(folder_path))
+        print('New version deployed!')
+        success = True
+    except Exception:
+        success = False
+    return success

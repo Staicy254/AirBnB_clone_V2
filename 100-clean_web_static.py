@@ -1,50 +1,57 @@
 #!/usr/bin/python3
-"""Module for web application deployment with Fabric."""
+'''Write a Fabric script that deletes out-of-date archives, using the function do_clean'''
 import os
 from datetime import datetime
-from fabric.api import env, local, put, run, runs_once, sudo
+from fabric.api import env, local, put, run, runs_once
 
-env.hosts = ["34.73.0.174", "35.196.78.105"]
-"""List host server IP addresses."""
+
+env.hosts = ['52.91.149.183', '34.202.157.45']
 
 
 @runs_once
 def do_pack():
-    """archives static files."""
+    """Archives the static files."""
     if not os.path.isdir("versions"):
         os.mkdir("versions")
     cur_time = datetime.now()
-    output = f"versions/web_static_{cur_time.year}{cur_time.month}{cur_time.day}{cur_time.hour}{cur_time.minute}{cur_time.second}.tgz"
+    output = "versions/web_static_{}{}{}{}{}{}.tgz".format(
+        cur_time.year,
+        cur_time.month,
+        cur_time.day,
+        cur_time.hour,
+        cur_time.minute,
+        cur_time.second
+    )
     try:
-        print(f"Packing web_static to {output}")
-        local(f"tar -cvzf {output} web_static")
+        print("Packing web_static to {}".format(output))
+        local("tar -cvzf {} web_static".format(output))
         archize_size = os.stat(output).st_size
-        print(f"web_static packed: {output} -> {archize_size} Bytes")
+        print("web_static packed: {} -> {} Bytes".format(output, archize_size))
     except Exception:
         output = None
     return output
 
 
 def do_deploy(archive_path):
-    """Deploys - staticfiles to the host servers.
+    """Deploys the static files to the host servers.
     Args:
-        archive_path (str): Path to archived static files.
+        archive_path (str): The path to the archived static files.
     """
     if not os.path.exists(archive_path):
         return False
     file_name = os.path.basename(archive_path)
     folder_name = file_name.replace(".tgz", "")
-    folder_path = f"/data/web_static/releases/{folder_name}/"
+    folder_path = "/data/web_static/releases/{}/".format(folder_name)
     success = False
     try:
-        put(archive_path, f"/tmp/{file_name}")
-        run(f"mkdir -p {folder_path}")
-        run(f"tar -xzf /tmp/{file_name} -C {folder_path}")
-        run(f"rm -rf /tmp/{file_name}")
-        run(f"mv {folder_path}web_static/* {folder_path}")
-        run(f"rm -rf {folder_path}web_static")
-        run(f"rm -rf /data/web_static/current")
-        run(f"ln -s {folder_path} /data/web_static/current")
+        put(archive_path, "/tmp/{}".format(file_name))
+        run("mkdir -p {}".format(folder_path))
+        run("tar -xzf /tmp/{} -C {}".format(file_name, folder_path))
+        run("rm -rf /tmp/{}".format(file_name))
+        run("mv {}web_static/* {}".format(folder_path, folder_path))
+        run("rm -rf {}web_static".format(folder_path))
+        run("rm -rf /data/web_static/current")
+        run("ln -s {} /data/web_static/current".format(folder_path))
         print('New version deployed!')
         success = True
     except Exception:
@@ -53,17 +60,16 @@ def do_deploy(archive_path):
 
 
 def deploy():
-    """archives & deploys static files to host servers.
+    """Archives and deploys the static files to the host servers.
     """
     archive_path = do_pack()
     return do_deploy(archive_path) if archive_path else False
 
 
 def do_clean(number=0):
-    """deletes out_of_date archives of static files.
-
+    """Deletes out-of-date archives of the static files.
     Args:
-        number (int): Number of archives to keep.
+        number (Any): The number of archives to keep.
     """
     archives = os.listdir('versions/')
     archives.sort(reverse=True)
@@ -75,12 +81,11 @@ def do_clean(number=0):
     else:
         archives = []
     for archive in archives:
-        os.unlink(f'versions/{archive}')
+        os.unlink('versions/{}'.format(archive))
     cmd_parts = [
         "rm -rf $(",
         "find /data/web_static/releases/ -maxdepth 1 -type d -iregex",
         " '/data/web_static/releases/web_static_.*'",
-        f" | sort -r | tr '\\n' ' ' | cut -d ' ' -f{start + 1}-)"
+        " | sort -r | tr '\\n' ' ' | cut -d ' ' -f{}-)".format(start + 1)
     ]
     run(''.join(cmd_parts))
-
